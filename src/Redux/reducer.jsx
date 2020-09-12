@@ -21,9 +21,9 @@ function probably_2_or_4(maxNumber) {
 	const num = Math.floor(Math.random() * 20) + 1
 
 	if (probably / 4 >= num) {
-		return 2
-	} else {
 		return 4
+	} else {
+		return 2
 	}
 }
 
