@@ -5,19 +5,20 @@ import shortid from 'shortid'
 import { INITAL } from '../Redux/action'
 
 class Nav extends Component {
+	// Generate new id for refreshing the score animation.
 	getId = () => {
 		const id = shortid.generate()
-		console.log(id)
 		return id
 	}
 
 	render() {
-		const { currScore, currScorePlus, maxScore, maxScorePlus, inital } = this.props
+		const { currScore, currScorePlus, maxScore, maxScorePlus, lose, inital } = this.props
+		console.log(lose)
 
 		return (
 			<header className="header">
 				<div className="headerMainPart">
-					<h1 className="headerTitle">2048</h1>
+					<h1 className={lose === -1 ? 'headerTitle colorTitle' : 'headerTitle'}>2048</h1>
 					<div className="score">
 						<div className="scoreContainer">
 							<p className="scoreTitle">SCORE</p>
@@ -57,7 +58,8 @@ const mapStateToProps = (state) => {
 		currScore: state.currScore,
 		currScorePlus: state.currScorePlus,
 		maxScore: state.maxScore,
-		maxScorePlus: state.maxScorePlus
+		maxScorePlus: state.maxScorePlus,
+		lose: state.lose
 	}
 }
 

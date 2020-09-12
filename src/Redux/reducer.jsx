@@ -2,28 +2,32 @@ import { INITAL, MOVE_TOP_DOWN, MOVE_LEFT_RIGHT } from './action'
 
 let myState = {
 	newGame: true,
-	game: [],
-	transition: [],
-	combine: [],
-	newPosition: [],
+	game: [], // game box
 	currScore: 0,
 	currScorePlus: 0,
 	maxScore: 0,
 	maxScorePlus: 0,
-	lose: 0
+	lose: 0,
+
+	// using for css move animation
+	transition: [], // move length of each number in every round
+	combine: [], // record the position of new combined number
+	newPosition: [] // record the position of new occured number
 }
 
+// Possibility occur new number of 2 or 4, when max number larger, the possibility of 4 occured will increase.
 function probably_2_or_4(maxNumber) {
 	const probably = Math.round(Math.log(maxNumber) / Math.log(2))
 	const num = Math.floor(Math.random() * 20) + 1
 
 	if (probably / 4 >= num) {
-		return 4
-	} else {
 		return 2
+	} else {
+		return 4
 	}
 }
 
+// Process the move action of each line
 function process_each_line(eachLine) {
 	let oldEachLine = eachLine.map((eachOne) => {
 		return eachOne
@@ -31,12 +35,14 @@ function process_each_line(eachLine) {
 	let score = 0
 	let tmpTransition = [ '', '', '', '' ]
 	let tmpCombine = [ false, false, false, false ]
+	// Combine the same number of each line
 	for (let i = 0; i < 4; i++) {
 		if (eachLine[i] !== 0) {
 			for (let j = i + 1; j < 4; j++) {
 				if (eachLine[j] !== eachLine[i] && eachLine[j] !== 0) {
 					break
 				}
+				// when two number are same, combine and record them.
 				if (eachLine[j] === eachLine[i]) {
 					eachLine[i] *= 2
 					score += eachLine[i]
@@ -49,10 +55,12 @@ function process_each_line(eachLine) {
 			}
 		}
 	}
+	// Remove the space of each line
 	eachLine = eachLine.filter((eachOne) => eachOne !== 0)
 	for (let i = eachLine.length; i < 4; i++) {
 		eachLine.push(0)
 	}
+	// Calculate the move length of each number (using for move animation)
 	for (let i = 0; i < 4; i++) {
 		if (eachLine[i] === 0) {
 			break
@@ -82,6 +90,7 @@ function process_each_line(eachLine) {
 	return { eachLine: eachLine, tmpTransition: tmpTransition, tmpCombine: tmpCombine, score: score }
 }
 
+// Add a random number
 function add_random_num(game) {
 	const maxNum = Math.max(...game)
 	let tmpNewPosition
@@ -97,10 +106,13 @@ function add_random_num(game) {
 	return { game: game, tmpNewPosition: tmpNewPosition }
 }
 
+// Judge the game lose or not in each round
 function Lose(game) {
+	// Judge the game box has spave or not
 	if (game.filter((eachOne) => eachOne === 0).length !== 0) {
 		return 1
 	}
+	// Judge each number's round has same number or not
 	for (let i = 0; i < 16; i++) {
 		if (i - 4 >= 0) {
 			if (game[i] === game[i - 4]) {
@@ -128,6 +140,7 @@ function Lose(game) {
 
 function Reducers(state = myState, action) {
 	switch (action.type) {
+		// inital game
 		case INITAL: {
 			let tmpGame = []
 			let tmpTransition = []
@@ -165,6 +178,8 @@ function Reducers(state = myState, action) {
 
 			return state
 		}
+
+		// when action move 'top' or 'down'
 		case MOVE_TOP_DOWN: {
 			let tmpGame = state.game.map((eachOne) => {
 				return eachOne
@@ -177,10 +192,13 @@ function Reducers(state = myState, action) {
 			}
 			let add_score = 0
 
+			// Seperate the game box to 4 line and calculate each line.
 			for (let i = 0; i < 4; i++) {
 				let eachLine = [ tmpGame[i], tmpGame[i + 4], tmpGame[i + 8], tmpGame[i + 12] ]
 				let tmpTransitionLine
 				let tmpCombineLine
+
+				// 'top'
 				if (action.payload.toggle === 'top') {
 					const result = process_each_line(eachLine)
 					eachLine = result.eachLine
@@ -205,6 +223,7 @@ function Reducers(state = myState, action) {
 						}
 					})
 				}
+				// 'down'
 				if (action.payload.toggle === 'down') {
 					eachLine = eachLine.reverse()
 					const result = process_each_line(eachLine)
@@ -245,10 +264,19 @@ function Reducers(state = myState, action) {
 				tmpCombine[i + 12] = tmpCombineLine[3]
 			}
 
-			const gameResult = add_random_num(tmpGame)
-			tmpGame = gameResult.game
-			const tmpNewPosition = gameResult.tmpNewPosition
+			// add new number (not add if game was not change)
+			let tmpNewPosition
+			if (tmpTransition.filter((eachOne) => eachOne !== '').length !== 0) {
+				const gameResult = add_random_num(tmpGame)
+				tmpGame = gameResult.game
+				tmpNewPosition = gameResult.tmpNewPosition
+			}
+
+			// juage lose or win
 			let lose = 0
+			if (Math.max(...tmpGame) >= 2048) {
+				lose = -1
+			}
 			if (Lose(tmpGame) === 0) {
 				lose = 1
 			}
@@ -271,6 +299,8 @@ function Reducers(state = myState, action) {
 
 			return state
 		}
+
+		// when move 'left' or 'right'
 		case MOVE_LEFT_RIGHT: {
 			let tmpGame = state.game.map((eachOne) => {
 				return eachOne
@@ -288,6 +318,7 @@ function Reducers(state = myState, action) {
 				eachLine = [ tmpGame[i], tmpGame[i + 1], tmpGame[i + 2], tmpGame[i + 3] ]
 				let tmpTransitionLine
 				let tmpCombineLine
+				// 'left'
 				if (action.payload.toggle === 'left') {
 					const result = process_each_line(eachLine)
 					eachLine = result.eachLine
@@ -312,6 +343,7 @@ function Reducers(state = myState, action) {
 						}
 					})
 				}
+				// 'right'
 				if (action.payload.toggle === 'right') {
 					eachLine = eachLine.reverse()
 					const result = process_each_line(eachLine)
@@ -352,11 +384,19 @@ function Reducers(state = myState, action) {
 				tmpCombine[i + 3] = tmpCombineLine[3]
 			}
 
-			const gameResult = add_random_num(tmpGame)
-			tmpGame = gameResult.game
-			const tmpNewPosition = gameResult.tmpNewPosition
-			let lose = 0
+			// add new number (not add if game was not change)
+			let tmpNewPosition
+			if (tmpTransition.filter((eachOne) => eachOne !== '').length !== 0) {
+				const gameResult = add_random_num(tmpGame)
+				tmpGame = gameResult.game
+				tmpNewPosition = gameResult.tmpNewPosition
+			}
 
+			// judge lose or win
+			let lose = 0
+			if (Math.max(...tmpGame) >= 2048) {
+				lose = -1
+			}
 			if (Lose(tmpGame) === 0) {
 				lose = 1
 			}
@@ -379,6 +419,8 @@ function Reducers(state = myState, action) {
 
 			return state
 		}
+
+		// default
 		default:
 			return state
 	}

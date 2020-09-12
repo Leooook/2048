@@ -14,6 +14,7 @@ class Body extends Component {
 		moveY: 0
 	}
 
+	// Set different color style of each number box.
 	changeColor = (eachNum) => {
 		switch (eachNum) {
 			case 2: {
@@ -61,6 +62,7 @@ class Body extends Component {
 		}
 	}
 
+	// Show animation when new number occured.
 	newPositionAnimation = (index, newPosition) => {
 		if (newPosition instanceof Array) {
 			if (index === newPosition[0] || index === newPosition[1]) {
@@ -74,6 +76,7 @@ class Body extends Component {
 		}
 	}
 
+	// Show animation when combine occured.
 	combineAnimation = (index, combine) => {
 		if (combine[index] === true) {
 			return 'combine'
@@ -82,6 +85,7 @@ class Body extends Component {
 		}
 	}
 
+	// Keyboard action
 	keyUp = (e) => {
 		if (e.keyCode === 38) {
 			this.props.moveTopDown('top')
@@ -97,24 +101,25 @@ class Body extends Component {
 		}
 	}
 
+	// Mobile slip action
 	updateState = (game) => {
 		setTimeout(() => this.setState({ game }), 70)
 	}
-
+	// Record start position
 	NavonTouchStart = (e) => {
 		this.setState({
 			firstX: e.targetTouches[0].clientX,
 			firstY: e.targetTouches[0].clientY
 		})
 	}
-
+	// Record end position
 	NavonTouchMove = (e) => {
 		this.setState({
 			endX: e.changedTouches[0].clientX,
 			endY: e.changedTouches[0].clientY
 		})
 	}
-
+	// When slip finish, calculate the direction
 	touchEnd = () => {
 		var moveX = this.state.endX - this.state.firstX
 		var moveY = this.state.endY - this.state.firstY
@@ -139,7 +144,7 @@ class Body extends Component {
 		if (game !== this.state.game) {
 			this.updateState(game)
 		}
-		//const arr = [ 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 5, '' ]
+		// test const arr = [ 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 5, '' ]
 		return (
 			<section className="body">
 				<div
